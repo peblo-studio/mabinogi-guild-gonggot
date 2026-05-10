@@ -2,6 +2,7 @@
 
 import { Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { clearSession, createSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -16,14 +17,24 @@ function normalizeText(value: FormDataEntryValue | null) {
   return String(value ?? "").trim();
 }
 
-function redirectLoginErrorCode(code: string): never {
-  const search = new URLSearchParams({ e: code });
-  redirect(`/login?${search.toString()}`);
+async function redirectLoginErrorCode(code: string): Promise<never> {
+  const cookieStore = await cookies();
+  cookieStore.set("login_notice", `error:${code}`, {
+    path: "/login",
+    maxAge: 30,
+    sameSite: "lax",
+  });
+  redirect("/login");
 }
 
-function redirectLoginSuccessCode(code: string): never {
-  const search = new URLSearchParams({ s: code });
-  redirect(`/login?${search.toString()}`);
+async function redirectLoginSuccessCode(code: string): Promise<never> {
+  const cookieStore = await cookies();
+  cookieStore.set("login_notice", `success:${code}`, {
+    path: "/login",
+    maxAge: 30,
+    sameSite: "lax",
+  });
+  redirect("/login");
 }
 
 export async function loginAction(formData: FormData) {
@@ -31,7 +42,7 @@ export async function loginAction(formData: FormData) {
   const password = normalizeText(formData.get("password"));
 
   if (!username || !password) {
-    redirectLoginErrorCode("missing_credentials");
+    await redirectLoginErrorCode("missing_credentials");
   }
 
   const user = await prisma.user.findUnique({
@@ -40,18 +51,18 @@ export async function loginAction(formData: FormData) {
   });
 
   if (!user) {
-    redirectLoginErrorCode("account_not_found");
+    await redirectLoginErrorCode("account_not_found");
   }
 
   const valid = await bcrypt.compare(password, user.passwordHash);
   if (!valid) {
-    redirectLoginErrorCode("invalid_password");
+    await redirectLoginErrorCode("invalid_password");
   }
 
   try {
     await createSession(user.id);
   } catch {
-    redirectLoginErrorCode("login_failed");
+    await redirectLoginErrorCode("login_failed");
   }
   redirect("/");
 }
@@ -62,15 +73,15 @@ export async function registerAction(formData: FormData) {
   const password = normalizeText(formData.get("password"));
 
   if (!/^[a-z0-9_]{3,20}$/.test(username)) {
-    redirectLoginErrorCode("invalid_username");
+    await redirectLoginErrorCode("invalid_username");
   }
 
   if (displayName.length < 2 || displayName.length > 20) {
-    redirectLoginErrorCode("invalid_display_name");
+    await redirectLoginErrorCode("invalid_display_name");
   }
 
   if (password.length < 6) {
-    redirectLoginErrorCode("invalid_password_length");
+    await redirectLoginErrorCode("invalid_password_length");
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
@@ -86,12 +97,12 @@ export async function registerAction(formData: FormData) {
     });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-      redirectLoginErrorCode("duplicate_username");
+      await redirectLoginErrorCode("duplicate_username");
     }
-    redirectLoginErrorCode("register_failed");
+    await redirectLoginErrorCode("register_failed");
   }
 
-  redirectLoginSuccessCode("registered");
+  await redirectLoginSuccessCode("registered");
 }
 
 export async function logoutAction() {

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { getSessionUser } from "@/lib/auth";
@@ -52,10 +53,22 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   }
 
   const params = await searchParams;
-  const error = params?.e ? (ERROR_MESSAGE_MAP[params.e] ?? "오류가 발생했습니다.") : params?.error;
-  const success = params?.s
+  const notice = (await cookies()).get("login_notice")?.value;
+  const [noticeType, noticeCode] = (notice ?? "").split(":");
+
+  const noticeError =
+    noticeType === "error" && noticeCode ? (ERROR_MESSAGE_MAP[noticeCode] ?? "오류가 발생했습니다.") : undefined;
+  const noticeSuccess =
+    noticeType === "success" && noticeCode
+      ? (SUCCESS_MESSAGE_MAP[noticeCode] ?? "요청이 완료되었습니다.")
+      : undefined;
+
+  const error = noticeError ?? (params?.e ? (ERROR_MESSAGE_MAP[params.e] ?? "오류가 발생했습니다.") : params?.error);
+  const success =
+    noticeSuccess ??
+    (params?.s
     ? (SUCCESS_MESSAGE_MAP[params.s] ?? "요청이 완료되었습니다.")
-    : params?.success;
+    : params?.success);
 
   return (
     <>
