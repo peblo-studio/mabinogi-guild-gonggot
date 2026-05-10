@@ -27,6 +27,8 @@ type ReservationsPageProps = {
   searchParams?: Promise<{
     week?: string;
     message?: string;
+    mine?: string;
+    view?: string;
   }>;
 };
 
@@ -56,6 +58,8 @@ const DAYS = [
 export default async function ReservationsPage({ searchParams }: ReservationsPageProps) {
   const params = await searchParams;
   const weekStart = parseWeekStartISO(params?.week ?? getCurrentWeekStartISO());
+  const mineOnly = params?.mine === "1";
+  const view = params?.view === "RAID" || params?.view === "ABYSS" ? params.view : "ALL";
   const weekLabel = getWeekRangeLabel(weekStart);
   const prevWeek = addWeeksISO(weekStart, -1);
   const nextWeek = addWeeksISO(weekStart, 1);
@@ -83,8 +87,27 @@ export default async function ReservationsPage({ searchParams }: ReservationsPag
     new Promise<ReservationWithUser[]>((resolve) => setTimeout(() => resolve([]), 1200)),
   ]);
 
-  const raidReservations = reservations.filter((item) => item.type === "RAID");
-  const abyssReservations = reservations.filter((item) => item.type === "ABYSS");
+  const filteredByMine =
+    mineOnly && sessionUser ? reservations.filter((item) => item.userId === sessionUser.id) : reservations;
+
+  const raidReservations = filteredByMine.filter((item) => item.type === "RAID");
+  const abyssReservations = filteredByMine.filter((item) => item.type === "ABYSS");
+  const summaryReservations = filteredByMine.filter((item) => {
+    if (view === "RAID") return item.type === "RAID";
+    if (view === "ABYSS") return item.type === "ABYSS";
+    return true;
+  });
+
+  const buildFilterHref = (nextMine: boolean, nextView: "ALL" | "RAID" | "ABYSS") => {
+    const search = new URLSearchParams({ week: weekStart });
+    if (nextMine) {
+      search.set("mine", "1");
+    }
+    if (nextView !== "ALL") {
+      search.set("view", nextView);
+    }
+    return `/reservations?${search.toString()}`;
+  };
 
   return (
     <>
@@ -160,6 +183,48 @@ export default async function ReservationsPage({ searchParams }: ReservationsPag
           </p>
         ) : null}
 
+        <section className="mt-6 rounded-xl border border-zinc-200 bg-white p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm font-medium text-zinc-900">필터</p>
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <Link
+                href={buildFilterHref(mineOnly, "ALL")}
+                className={`rounded-full px-3 py-1 ${
+                  view === "ALL" ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-700"
+                }`}
+              >
+                전체
+              </Link>
+              <Link
+                href={buildFilterHref(mineOnly, "RAID")}
+                className={`rounded-full px-3 py-1 ${
+                  view === "RAID" ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-700"
+                }`}
+              >
+                레이드
+              </Link>
+              <Link
+                href={buildFilterHref(mineOnly, "ABYSS")}
+                className={`rounded-full px-3 py-1 ${
+                  view === "ABYSS" ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-700"
+                }`}
+              >
+                어비스
+              </Link>
+              {sessionUser ? (
+                <Link
+                  href={buildFilterHref(!mineOnly, view)}
+                  className={`rounded-full px-3 py-1 ${
+                    mineOnly ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-700"
+                  }`}
+                >
+                  {mineOnly ? "내 예약만: ON" : "내 예약만: OFF"}
+                </Link>
+              ) : null}
+            </div>
+          </div>
+        </section>
+
         <div className="mt-8 grid gap-6 lg:grid-cols-2">
           <ReservationSection
             title="레이드 예약"
@@ -182,11 +247,11 @@ export default async function ReservationsPage({ searchParams }: ReservationsPag
         <section className="mt-8 rounded-2xl border border-zinc-200 bg-white p-5">
           <h2 className="text-lg font-semibold tracking-tight text-zinc-900">이번 주 전체 예약 현황</h2>
           <p className="mt-1 text-xs text-zinc-500">누가 몇 시에 예약했는지 한눈에 볼 수 있어요.</p>
-          {reservations.length === 0 ? (
+          {summaryReservations.length === 0 ? (
             <p className="mt-3 text-sm text-zinc-500">아직 등록된 예약이 없습니다.</p>
           ) : (
             <ul className="mt-4 space-y-2">
-              {reservations.map((item) => (
+              {summaryReservations.map((item) => (
                 <li key={item.id} className="rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-700">
                   <p className="font-medium text-zinc-900">
                     {item.type === "RAID" ? "레이드" : "어비스"} · {getDayLabel(item.dayOfWeek)} · {item.timeSlot}
