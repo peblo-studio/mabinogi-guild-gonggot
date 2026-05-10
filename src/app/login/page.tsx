@@ -7,6 +7,7 @@ import { loginAction, registerAction } from "@/app/actions/auth";
 type LoginPageProps = {
   searchParams?: Promise<{
     error?: string;
+    success?: string;
   }>;
 };
 
@@ -34,6 +35,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   const params = await searchParams;
   const error = params?.error;
+  const success = params?.success;
 
   return (
     <>
@@ -50,6 +52,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           {error ? (
             <p className="mt-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
               {error}
+            </p>
+          ) : null}
+          {success ? (
+            <p className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+              {success}
             </p>
           ) : null}
 

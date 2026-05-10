@@ -21,6 +21,11 @@ function redirectLoginError(message: string): never {
   redirect(`/login?${search.toString()}`);
 }
 
+function redirectLoginSuccess(message: string): never {
+  const search = new URLSearchParams({ success: message });
+  redirect(`/login?${search.toString()}`);
+}
+
 export async function loginAction(formData: FormData) {
   const username = normalizeUsername(formData.get("username"));
   const password = normalizeText(formData.get("password"));
@@ -70,9 +75,8 @@ export async function registerAction(formData: FormData) {
 
   const passwordHash = await bcrypt.hash(password, 10);
 
-  let userId: string;
   try {
-    const user = await prisma.user.create({
+    await prisma.user.create({
       data: {
         username,
         displayName,
@@ -80,7 +84,6 @@ export async function registerAction(formData: FormData) {
       },
       select: { id: true },
     });
-    userId = user.id;
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       redirectLoginError("이미 사용 중인 아이디입니다.");
@@ -88,12 +91,7 @@ export async function registerAction(formData: FormData) {
     redirectLoginError("회원가입 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
   }
 
-  try {
-    await createSession(userId);
-  } catch {
-    redirectLoginError("가입은 완료되었지만 자동 로그인에 실패했습니다. 다시 로그인해 주세요.");
-  }
-  redirect("/reservations");
+  redirectLoginSuccess("회원가입이 완료되었습니다. 로그인해 주세요.");
 }
 
 export async function logoutAction() {
