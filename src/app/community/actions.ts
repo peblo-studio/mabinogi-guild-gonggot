@@ -52,10 +52,15 @@ function parseCategory(raw: string): CommunityCategory | null {
   return raw;
 }
 
+function redirectToLogin(message: string): never {
+  const search = new URLSearchParams({ error: message });
+  redirect(`/login?${search.toString()}`);
+}
+
 export async function createPostAction(formData: FormData) {
   const sessionUser = await getSessionUser();
   if (!sessionUser) {
-    redirect("/login?error=로그인 후 글 작성이 가능합니다.");
+    redirectToLogin("로그인 후 글 작성이 가능합니다.");
   }
 
   const categoryRaw = normalizeText(formData.get("category"));
@@ -94,7 +99,7 @@ export async function createPostAction(formData: FormData) {
 export async function updatePostAction(formData: FormData) {
   const sessionUser = await getSessionUser();
   if (!sessionUser) {
-    redirect("/login?error=로그인 후 수정이 가능합니다.");
+    redirectToLogin("로그인 후 수정이 가능합니다.");
   }
 
   const postId = normalizeText(formData.get("postId"));
@@ -146,7 +151,7 @@ export async function updatePostAction(formData: FormData) {
 export async function deletePostAction(formData: FormData) {
   const sessionUser = await getSessionUser();
   if (!sessionUser) {
-    redirect("/login?error=로그인 후 삭제가 가능합니다.");
+    redirectToLogin("로그인 후 삭제가 가능합니다.");
   }
 
   const postId = normalizeText(formData.get("postId"));
@@ -174,7 +179,7 @@ export async function deletePostAction(formData: FormData) {
 export async function togglePostLikeAction(formData: FormData) {
   const sessionUser = await getSessionUser();
   if (!sessionUser) {
-    redirect("/login?error=로그인 후 좋아요를 누를 수 있습니다.");
+    redirectToLogin("로그인 후 좋아요를 누를 수 있습니다.");
   }
 
   const postId = normalizeText(formData.get("postId"));
@@ -192,7 +197,7 @@ export async function togglePostLikeAction(formData: FormData) {
 export async function createCommentAction(formData: FormData) {
   const sessionUser = await getSessionUser();
   if (!sessionUser) {
-    redirect("/login?error=로그인 후 댓글 작성이 가능합니다.");
+    redirectToLogin("로그인 후 댓글 작성이 가능합니다.");
   }
 
   const postId = normalizeText(formData.get("postId"));
@@ -214,7 +219,7 @@ export async function createCommentAction(formData: FormData) {
 export async function deleteCommentAction(formData: FormData) {
   const sessionUser = await getSessionUser();
   if (!sessionUser) {
-    redirect("/login?error=로그인 후 댓글 삭제가 가능합니다.");
+    redirectToLogin("로그인 후 댓글 삭제가 가능합니다.");
   }
 
   const commentId = normalizeText(formData.get("commentId"));
@@ -250,7 +255,7 @@ export async function deleteCommentAction(formData: FormData) {
 export async function updateCommentAction(formData: FormData) {
   const sessionUser = await getSessionUser();
   if (!sessionUser) {
-    redirect("/login?error=로그인 후 댓글 수정이 가능합니다.");
+    redirectToLogin("로그인 후 댓글 수정이 가능합니다.");
   }
 
   const commentId = normalizeText(formData.get("commentId"));
@@ -288,7 +293,7 @@ export async function updateCommentAction(formData: FormData) {
 export async function togglePostPinAction(formData: FormData) {
   const sessionUser = await getSessionUser();
   if (!sessionUser) {
-    redirect("/login?error=로그인 후 이용해 주세요.");
+    redirectToLogin("로그인 후 이용해 주세요.");
   }
   const isAdmin = canWriteCategory(sessionUser.username, "NOTICE");
   if (!isAdmin) {

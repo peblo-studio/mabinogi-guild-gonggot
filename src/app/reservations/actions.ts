@@ -20,10 +20,15 @@ function buildRedirectURL(weekStart: string, message?: string) {
   return `/reservations?${search.toString()}`;
 }
 
+function redirectToLogin(message: string): never {
+  const search = new URLSearchParams({ error: message });
+  redirect(`/login?${search.toString()}`);
+}
+
 export async function createReservationAction(formData: FormData) {
   const sessionUser = await getSessionUser();
   if (!sessionUser) {
-    redirect("/login?error=로그인 후 이용해 주세요.");
+    redirectToLogin("로그인 후 이용해 주세요.");
   }
 
   const typeRaw = normalizeText(formData.get("type"));
@@ -76,7 +81,7 @@ export async function createReservationAction(formData: FormData) {
 export async function deleteReservationAction(formData: FormData) {
   const sessionUser = await getSessionUser();
   if (!sessionUser) {
-    redirect("/login?error=로그인 후 이용해 주세요.");
+    redirectToLogin("로그인 후 이용해 주세요.");
   }
 
   const reservationId = normalizeText(formData.get("reservationId"));
@@ -100,7 +105,7 @@ export async function deleteReservationAction(formData: FormData) {
 export async function updateDisplayNameAction(formData: FormData) {
   const sessionUser = await getSessionUser();
   if (!sessionUser) {
-    redirect("/login?error=로그인 후 이용해 주세요.");
+    redirectToLogin("로그인 후 이용해 주세요.");
   }
 
   const weekStart = parseWeekStartISO(normalizeText(formData.get("weekStart")));

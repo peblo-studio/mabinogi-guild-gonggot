@@ -17,7 +17,8 @@ export default async function EditPostPage({ params, searchParams }: EditPostPag
   const query = await searchParams;
   const sessionUser = await getSessionUser();
   if (!sessionUser) {
-    redirect("/login?error=로그인 후 수정이 가능합니다.");
+    const search = new URLSearchParams({ error: "로그인 후 수정이 가능합니다." });
+    redirect(`/login?${search.toString()}`);
   }
 
   const post = await Promise.race([

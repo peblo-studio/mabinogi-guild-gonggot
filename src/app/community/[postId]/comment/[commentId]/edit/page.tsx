@@ -17,7 +17,8 @@ export default async function EditCommentPage({ params, searchParams }: EditComm
   const query = await searchParams;
   const sessionUser = await getSessionUser();
   if (!sessionUser) {
-    redirect("/login?error=로그인 후 댓글 수정이 가능합니다.");
+    const search = new URLSearchParams({ error: "로그인 후 댓글 수정이 가능합니다." });
+    redirect(`/login?${search.toString()}`);
   }
 
   const [post, comment] = await Promise.all([
