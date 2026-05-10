@@ -51,21 +51,21 @@ export async function loginAction(formData: FormData) {
   });
 
   if (!user) {
-    await redirectLoginErrorCode("account_not_found");
+    return await redirectLoginErrorCode("account_not_found");
   }
-  if (!user?.passwordHash) {
-    await redirectLoginErrorCode("login_failed");
+  if (!user.passwordHash) {
+    return await redirectLoginErrorCode("login_failed");
   }
 
   const valid = await bcrypt.compare(password, user.passwordHash);
   if (!valid) {
-    await redirectLoginErrorCode("invalid_password");
+    return await redirectLoginErrorCode("invalid_password");
   }
 
   try {
     await createSession(user.id);
   } catch {
-    await redirectLoginErrorCode("login_failed");
+    return await redirectLoginErrorCode("login_failed");
   }
   redirect("/");
 }
