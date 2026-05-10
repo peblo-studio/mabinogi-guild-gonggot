@@ -39,7 +39,12 @@ function parseToken(token: string) {
     return null;
   }
 
-  const expected = signPayload(encodedPayload);
+  let expected: string;
+  try {
+    expected = signPayload(encodedPayload);
+  } catch {
+    return null;
+  }
   const providedBuffer = Buffer.from(signature);
   const expectedBuffer = Buffer.from(expected);
   if (providedBuffer.length !== expectedBuffer.length) {

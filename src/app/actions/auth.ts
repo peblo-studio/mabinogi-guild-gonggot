@@ -38,7 +38,11 @@ export async function loginAction(formData: FormData) {
     redirect("/login?error=비밀번호가 올바르지 않아요.");
   }
 
-  await createSession(user.id);
+  try {
+    await createSession(user.id);
+  } catch {
+    redirect("/login?error=서버 세션 설정 오류입니다. 관리자에게 문의해 주세요.");
+  }
   redirect("/reservations");
 }
 
@@ -77,7 +81,11 @@ export async function registerAction(formData: FormData) {
       select: { id: true },
     });
 
-    await createSession(user.id);
+    try {
+      await createSession(user.id);
+    } catch {
+      redirect("/login?error=가입은 완료되었지만 자동 로그인에 실패했습니다. 다시 로그인해 주세요.");
+    }
     redirect("/reservations");
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
