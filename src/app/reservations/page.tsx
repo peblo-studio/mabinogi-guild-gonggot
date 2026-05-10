@@ -178,6 +178,29 @@ export default async function ReservationsPage({ searchParams }: ReservationsPag
             currentUserId={sessionUser?.id ?? null}
           />
         </div>
+
+        <section className="mt-8 rounded-2xl border border-zinc-200 bg-white p-5">
+          <h2 className="text-lg font-semibold tracking-tight text-zinc-900">이번 주 전체 예약 현황</h2>
+          <p className="mt-1 text-xs text-zinc-500">누가 몇 시에 예약했는지 한눈에 볼 수 있어요.</p>
+          {reservations.length === 0 ? (
+            <p className="mt-3 text-sm text-zinc-500">아직 등록된 예약이 없습니다.</p>
+          ) : (
+            <ul className="mt-4 space-y-2">
+              {reservations.map((item) => (
+                <li key={item.id} className="rounded-lg border border-zinc-200 px-3 py-2 text-sm text-zinc-700">
+                  <p className="font-medium text-zinc-900">
+                    {item.type === "RAID" ? "레이드" : "어비스"} · {getDayLabel(item.dayOfWeek)} · {item.timeSlot}
+                  </p>
+                  <p className="mt-1 text-xs text-zinc-600">
+                    예약자: {item.user.displayName} ·{" "}
+                    {getContentLabel(item.type, item.contentKey ?? getDefaultContentKey(item.type))}
+                  </p>
+                  {item.note ? <p className="mt-1 text-xs text-zinc-500">메모: {item.note}</p> : null}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       </main>
       <Footer />
     </>
