@@ -53,6 +53,9 @@ export async function loginAction(formData: FormData) {
   if (!user) {
     await redirectLoginErrorCode("account_not_found");
   }
+  if (!user?.passwordHash) {
+    await redirectLoginErrorCode("login_failed");
+  }
 
   const valid = await bcrypt.compare(password, user.passwordHash);
   if (!valid) {
