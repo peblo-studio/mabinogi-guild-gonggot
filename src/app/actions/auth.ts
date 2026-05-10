@@ -50,7 +50,6 @@ export async function registerAction(formData: FormData) {
   const username = normalizeUsername(formData.get("username"));
   const displayName = normalizeText(formData.get("displayName"));
   const password = normalizeText(formData.get("password"));
-  const inviteCode = normalizeText(formData.get("inviteCode"));
 
   if (!/^[a-z0-9_]{3,20}$/.test(username)) {
     redirect("/login?error=아이디는 영문 소문자/숫자/_ 3~20자로 입력해 주세요.");
@@ -62,11 +61,6 @@ export async function registerAction(formData: FormData) {
 
   if (password.length < 6) {
     redirect("/login?error=비밀번호는 최소 6자 이상이어야 합니다.");
-  }
-
-  const requiredInviteCode = process.env.GUILD_INVITE_CODE?.trim();
-  if (requiredInviteCode && inviteCode !== requiredInviteCode) {
-    redirect("/login?error=가입 코드가 맞지 않습니다.");
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
