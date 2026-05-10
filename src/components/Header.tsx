@@ -24,11 +24,16 @@ export async function Header() {
             커뮤니티
           </Link>
           {user ? (
-            <form action={logoutAction}>
-              <button type="submit" className="text-xs text-zinc-600 hover:text-zinc-900">
-                로그아웃
-              </button>
-            </form>
+            <>
+              <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-1 text-[11px] text-zinc-700">
+                {user.displayName} · Lv.1
+              </span>
+              <form action={logoutAction}>
+                <button type="submit" className="text-xs text-zinc-600 hover:text-zinc-900">
+                  로그아웃
+                </button>
+              </form>
+            </>
           ) : (
             <Link href="/login" className="text-xs text-zinc-600 hover:text-zinc-900">
               로그인

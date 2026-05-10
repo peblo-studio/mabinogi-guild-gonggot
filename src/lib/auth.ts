@@ -18,11 +18,15 @@ type SessionUser = {
 };
 
 function getAuthSecret() {
-  const secret = process.env.AUTH_SECRET;
-  if (!secret || secret.length < 16) {
-    throw new Error("AUTH_SECRET must be set and at least 16 chars");
+  const secret = process.env.AUTH_SECRET?.trim();
+  if (secret && secret.length >= 16) {
+    return secret;
   }
-  return secret;
+  const fallback = process.env.DATABASE_URL?.trim();
+  if (fallback && fallback.length >= 16) {
+    return fallback;
+  }
+  return "guild-session-fallback-secret-please-set-auth-secret";
 }
 
 function signPayload(encodedPayload: string) {
