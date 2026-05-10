@@ -8,7 +8,25 @@ type LoginPageProps = {
   searchParams?: Promise<{
     error?: string;
     success?: string;
+    e?: string;
+    s?: string;
   }>;
+};
+
+const ERROR_MESSAGE_MAP: Record<string, string> = {
+  missing_credentials: "아이디와 비밀번호를 입력해 주세요.",
+  account_not_found: "계정을 찾을 수 없어요.",
+  invalid_password: "비밀번호가 올바르지 않아요.",
+  login_failed: "로그인 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+  invalid_username: "아이디는 영문 소문자/숫자/_ 3~20자로 입력해 주세요.",
+  invalid_display_name: "표시 이름은 2~20자로 입력해 주세요.",
+  invalid_password_length: "비밀번호는 최소 6자 이상이어야 합니다.",
+  duplicate_username: "이미 사용 중인 아이디입니다.",
+  register_failed: "회원가입 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+};
+
+const SUCCESS_MESSAGE_MAP: Record<string, string> = {
+  registered: "회원가입이 완료되었습니다. 로그인해 주세요.",
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
@@ -34,8 +52,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   }
 
   const params = await searchParams;
-  const error = params?.error;
-  const success = params?.success;
+  const error = params?.e ? (ERROR_MESSAGE_MAP[params.e] ?? "오류가 발생했습니다.") : params?.error;
+  const success = params?.s
+    ? (SUCCESS_MESSAGE_MAP[params.s] ?? "요청이 완료되었습니다.")
+    : params?.success;
 
   return (
     <>
